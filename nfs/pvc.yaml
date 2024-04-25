@@ -1,0 +1,13 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-nfs
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: "" # leave empty for nfs
+  resources:
+    requests:
+      storage: 10Gi
+
