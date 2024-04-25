@@ -1,1 +1,4 @@
-# pers-nvme
+# PerSSD-NVMe: Kubernetes Operator for Persistent, Shared, and Scalable Data when deploying local NVMe SSDs for scientific workflows
+PerSSD-NVMe is a Kubernetes/OpenShift operator that plays as the "burst buffer" layer to track and save data on persistent storage (i.e., object storage) when the application leverages the high throughput and low latency of reading and writing data from and to local NVMe SSDs. 
+Traditional HPC, AI, and data-driven workflows often have persistent data objects both from intermediate states as well as final outputs. Moving these workflows to the cloud causes a dramatic I/O performance impact because of the remote, relatively slow storage. Using node-local storage, properly managed, these data objects can be preserved more efficiently than writing directly to remote object storage.
+
