@@ -4,13 +4,13 @@ PerSSD-NVMe is a Kubernetes/OpenShift operator that plays as the "burst buffer" 
 
 Traditional HPC, AI, and data-driven workflows often have persistent data objects both from intermediate states as well as final outputs. Moving these workflows to the cloud causes a dramatic I/O performance impact because of the remote, relatively slow storage. Using node-local storage, properly managed, these data objects can be preserved more efficiently than writing directly to remote object storage.
 
-## Prerequisites - dependencies
+## Prerequisites
 List all dependencies or software packages required to install or run your project fully
 
 ## Installation
 List all the steps needed to install (compile) your project.
 
-## Using - Running
+## Running
 List all the steps to run your project as well as the different arguments or options you have to execute it.
 
 ## Related Publications
