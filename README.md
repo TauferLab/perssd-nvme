@@ -29,4 +29,4 @@ Michela Taufer: mtaufer@utk.edu
 Copyright (c) 2023, Global Computing Lab
 
 PerSSD-NVMe is distributed under terms of the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0) with LLVM Exceptions.
-See [LICENSE](https://github.com/TauferLab/) for more details.
+See [LICENSE](https://github.com/TauferLab/pers-nvme/blob/main/LICENSE) for more details.
