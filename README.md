@@ -19,10 +19,10 @@ List all the steps to run your project as well as the different arguments or opt
 
 ## Acknowledgments
 The authors acknowledge the support of IBM through a Shared University Research Award; Sandia National Laboratories; the National Science Foundation through the grant numbers #2028923, #2103845, #2103836, and #2138811; and the Access program through the NSF grant #2138296.
-Any opinions, findings, and conclusions, or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation. 
+Any opinions, findings, conclusions, or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation. 
 
 ## Contact Info
-Paula Olaya: polaya@vols.utk.edu
+Paula Olaya: polaya@vols.utk.edu  
 Michela Taufer: mtaufer@utk.edu
 
 ## Copyright and License 
