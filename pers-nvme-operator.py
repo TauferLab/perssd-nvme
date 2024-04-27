@@ -106,7 +106,7 @@ def transfer_data(pod_name, outs_str, node, namespace):
     name='transfer-data-'+pod_name
     security_context = client.V1SecurityContext(privileged=True, run_as_user=0)
     container=client.V1Container(image="redhat/ubi9-minimal", name="basic", command=["sh", "-c"],
-            args = [f"if test -f {outs_str}; then echo {outs_str} EXISTS && mv {outs_str} /cos/.; else echo DIR moved && mv {outs_str}/ /cos/.; fi"], #only if file exists, move it
+            args = [f"for f in {outs_str}; do if test -f $f; then echo $f FILE MOVED && mv $f /cos/.; else echo $f DIR moved && mv $f/ /cos/.; fi; done;"], #only if file exists, move it
             volume_mounts = [volumem_nvme, volumem_cos], security_context=security_context)
     
     spec = client.V1PodSpec(restart_policy="Never", containers=[container], volumes=[volume_nvme, volume_cos])#, node_name=node)
