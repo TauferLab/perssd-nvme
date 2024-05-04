@@ -85,7 +85,7 @@ def verify_pod(connection, namespace):
             transfer_data(pod, not_pushed.loc[p,'outputs'], not_pushed.loc[p,'node'], namespace)
             logging.info(f"DATA PUSHED {not_pushed.loc[p,'outputs']} FROM {pod}")
             condition_time = 'UPDATE pods SET time=? WHERE podname = ?'
-            connection.cursor().execute(condition_time, (datetime.datetime.now(tz).strftime("%B_%d_%Y_%H-%M-%S"), pod_name))
+            connection.cursor().execute(condition_time, (datetime.datetime.now(tz).strftime("%B_%d_%Y_%H-%M-%S"), pod))
             connection.commit()
 
 def transfer_data(pod_name, outs_str, node, namespace):
