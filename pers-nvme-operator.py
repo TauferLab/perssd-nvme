@@ -7,6 +7,8 @@ import sqlite3
 from sqlite3 import Error
 import pandas as pd
 import itertools 
+import datetime
+from pytz import timezone
 
 # DAG Functions
 def from_parents_to_children(dag_dict):
@@ -41,7 +43,10 @@ def configure(settings: kopf.OperatorSettings, **_):
     settings.watching.connect_timeout = 1 * 60
     settings.watching.server_timeout = 10 * 60
     global connection
-    connection = create_connection("test.sqlite")
+    global tz 
+    tz = timezone('EST')
+    sqlite_name = datetime.datetime.now(tz).strftime("%B_%d_%Y_%H-%M-%S")
+    connection = create_connection(sqlite_name+".sqlite")
     connection.execute("DROP TABLE IF EXISTS pods")
     table = """
     CREATE TABLE pods (
@@ -51,7 +56,8 @@ def configure(settings: kopf.OperatorSettings, **_):
       node TEXT,
       children INTEGER,
       outputs TEXT,
-      pushed TEXT
+      pushed TEXT,
+      time TEXT
     );
     """
     execute_query(connection, table)  
@@ -78,23 +84,28 @@ def verify_pod(connection, namespace):
             connection.commit()
             transfer_data(pod, not_pushed.loc[p,'outputs'], not_pushed.loc[p,'node'], namespace)
             logging.info(f"DATA PUSHED {not_pushed.loc[p,'outputs']} FROM {pod}")
+            condition_time = 'UPDATE pods SET time=? WHERE podname = ?'
+            connection.cursor().execute(condition_time, (datetime.datetime.now(tz).strftime("%B_%d_%Y_%H-%M-%S"), pod_name))
+            connection.commit()
 
 def transfer_data(pod_name, outs_str, node, namespace):
     # Volume definition
     # If I want to create the PVC, check: v1.create_namespaced_persistent_volume_claim(<namespace>, <body>) 
-    #volume_nvme = client.V1Volume(name='nvme',host_path=client.V1HostPathVolumeSource(path='/var/data'))
-    #volumem_nvme = client.V1VolumeMount(
-    #                name="nvme",
-    #                mount_path="/nvme",
-    #            )
-    pvc_nfs = client.V1PersistentVolumeClaimVolumeSource(claim_name="pvc-nfs")
-    volume_nvme = client.V1Volume(name='nvme', persistent_volume_claim=pvc_nfs)
+    volume_nvme = client.V1Volume(name='nvme',host_path=client.V1HostPathVolumeSource(path='/var/data'))
     volumem_nvme = client.V1VolumeMount(
                     name="nvme",
                     mount_path="/nvme",
                 )
+    pvc_nfs = client.V1PersistentVolumeClaimVolumeSource(claim_name="pvc-nfs")
+    volume_nvme_nfs = client.V1Volume(name='nvme-nfs', persistent_volume_claim=pvc_nfs)
+    volumem_nvme_nfs = client.V1VolumeMount(
+                    name="nvme-nfs",
+                    mount_path="/nvme_nfs",
+                )
     
-    pvc_cos = client.V1PersistentVolumeClaimVolumeSource(claim_name="geotiled-pipeline-pvc-goetiled")
+    # Capture name of the cos automtically
+    pvc_cos = client.V1PersistentVolumeClaimVolumeSource(claim_name="geotiled-pipeline-pvc-cos")
+            #"geotiled-pipeline-pvc-goetiled")
     volume_cos = client.V1Volume(name='cos', persistent_volume_claim=pvc_cos)
     volumem_cos = client.V1VolumeMount(
                     name="cos",
@@ -107,11 +118,11 @@ def transfer_data(pod_name, outs_str, node, namespace):
     security_context = client.V1SecurityContext(privileged=True, run_as_user=0)
     container=client.V1Container(image="redhat/ubi9-minimal", name="basic", command=["sh", "-c"],
             args = [f"for f in {outs_str}; do if test -f $f; then echo $f FILE MOVED && mv $f /cos/.; else echo $f DIR moved && mv $f/ /cos/.; fi; done;"], #only if file exists, move it
-            volume_mounts = [volumem_nvme, volumem_cos], security_context=security_context)
+            volume_mounts = [volumem_nvme_nfs, volumem_nvme, volumem_cos], security_context=security_context)
     
-    spec = client.V1PodSpec(restart_policy="Never", containers=[container], volumes=[volume_nvme, volume_cos])#, node_name=node)
+    spec = client.V1PodSpec(restart_policy="Never", containers=[container], volumes=[volume_nvme_nfs, volume_nvme, volume_cos], node_name=node)
     pod_template = client.V1PodTemplateSpec(metadata=client.V1ObjectMeta(labels={"app": "transfer"}),spec=spec)
-    job_spec = client.V1JobSpec(template=pod_template, backoff_limit=4)
+    job_spec = client.V1JobSpec(template=pod_template, backoff_limit=4)#, ttl_seconds_after_finished=3)
     job = client.V1Job(api_version="batch/v1", kind="Job", metadata=client.V1ObjectMeta(name=name), spec=job_spec)
     v1 = client.BatchV1Api()
     obj = v1.create_namespaced_job(namespace=namespace, body=job)
@@ -163,13 +174,13 @@ def track_tasks(body, **kwargs):
                 # Extract annotations and turn them from str to dict
                 annotations = json.loads(body['metadata']['annotations']['kopf.zalando.org/last-handled-configuration'])
                 # Volumes related to the application --OO hardcoded to nvme and cos in this case
-                #logging.info(f"{len(annotations['spec']['volumes'])} volumes in the pod {annotations['spec']['volumes'][9:11]}")
+                #logging.info(f"{len(annotations['spec']['volumes'])} volumes in the pod {annotations['spec']['volumes']}")
                 # Get the nodename
                 node = annotations['spec']['nodeName']
 
                 # Insert entry in database
-                connection.execute("INSERT INTO pods (podname, taskname, node, children, outputs, pushed) VALUES(?, ?, ?, ?, ?, ?)",
-                                                      (pod_name, task_name, node, " ".join(children),  outs_str, "False"))
+                connection.execute("INSERT INTO pods (podname, taskname, node, children, outputs, pushed, time) VALUES(?, ?, ?, ?, ?, ?, ?)",
+                                                      (pod_name, task_name, node, " ".join(children),  outs_str, "False", datetime.datetime.now(tz).strftime("%B_%d_%Y_%H-%M-%S")))
                 connection.commit()
 
                 # Check pods and transfer data as needed
