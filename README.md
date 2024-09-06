@@ -10,13 +10,12 @@ PerSSD-NVMe is a Kubernetes/OpenShift operator that plays as the "burst buffer" 
 Traditional HPC, AI, and data-driven workflows often have persistent data objects both from intermediate states as well as final outputs. Moving these workflows to the cloud causes a dramatic I/O performance impact because of the remote, relatively slow storage. Using node-local storage, properly managed, these data objects can be preserved more efficiently than writing directly to remote object storage.
 
 ## Prerequisites
-List all dependencies or software packages required to install or run your project fully
-
-## Installation
-List all the steps needed to install (compile) your project.
-
+* Kubeflow
+* Terraform
+* kopf
+  
 ## Running
-List all the steps to run your project as well as the different arguments or options you have to execute it.
+To run the operator, please `kopf run pers-nvme-operator.py --verbose`
 
 ## Related Publications
 * P. Olaya et al., "Building Trust in Earth Science Findings through Data Traceability and Results Explainability," in IEEE Transactions on Parallel and Distributed Systems, vol. 34, no. 2, pp. 704-717, 1 Feb. 2023, doi: [10.1109/TPDS.2022.3220539](https://ieeexplore.ieee.org/abstract/document/9942337).
