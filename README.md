@@ -10,12 +10,19 @@ PerSSD-NVMe is a Kubernetes/OpenShift operator that plays as the "burst buffer" 
 Traditional HPC, AI, and data-driven workflows often have persistent data objects both from intermediate states as well as final outputs. Moving these workflows to the cloud causes a dramatic I/O performance impact because of the remote, relatively slow storage. Using node-local storage, properly managed, these data objects can be preserved more efficiently than writing directly to remote object storage.
 
 ## Prerequisites
-* Kubeflow
-* Terraform
-* kopf
+The user must have access to a Kubernetes/OpenShift cluster where they have the [Kubeflow](https://www.kubeflow.org/) or [open-data-hub](https://opendatahub.io/) operator. 
+On your local computer, you only need the python kubeflow to compile your pipeline and kopf to compile your operator. 
+* `pip install kfp==1.8`
+* `pip install kopf`
   
 ## Running
-To run the operator, please `kopf run pers-nvme-operator.py --verbose`
+The user would need to be logged into their cloud vendor of preference and have access to the cluster. 
+Once they have access, they need to:  
+1. Activate your operator: `kopf run pers-nvme-operator.py --verbose` on your terminal
+2. Compile your python kubeflow pipeline code: `python3 pipeline.py` - This will generate `yaml` files that can be executed now in Kubernete, for example `pipeline.yaml`. 
+3. Create the workflow in Kubernetes: `kubectl create pipeline.yaml`
+4. Track and monitor the execution: `kubectl get pods` 
+
 
 ## Related Publications
 * P. Olaya et al., "Building Trust in Earth Science Findings through Data Traceability and Results Explainability," in IEEE Transactions on Parallel and Distributed Systems, vol. 34, no. 2, pp. 704-717, 1 Feb. 2023, doi: [10.1109/TPDS.2022.3220539](https://ieeexplore.ieee.org/abstract/document/9942337).
